@@ -40,7 +40,7 @@ namespace Timer_Project
             Timer.Enabled = false;
 
             Hours = 0;
-            Minutes = 0;    
+            Minutes = 0;
             Seconds = 0;
         }
 
@@ -82,10 +82,10 @@ namespace Timer_Project
 
         private void txtHours_TextChanged(object sender, EventArgs e)
         {
-            TextBox Txt= ((TextBox)sender);
+            TextBox Txt = ((TextBox)sender);
             if (String.IsNullOrEmpty(Txt.Text)) return;
 
-            if(int.TryParse(Txt.Text,out int Value))
+            if (int.TryParse(Txt.Text, out int Value))
             {
                 if (Value > 60)
                 {
@@ -127,6 +127,9 @@ namespace Timer_Project
             Hours = Convert.ToInt32(txtHours.Text);
             Minutes = Convert.ToInt32(txtMinutes.Text);
             Seconds = Convert.ToInt32(txtSeconds.Text);
+
+            timeRemainder = new TimeSpan(Hours, Minutes, Seconds);
+
             btnStart.Enabled = false;
         }
 
@@ -136,7 +139,7 @@ namespace Timer_Project
             {
                 MessageBox.Show("You must do so before entering the time."
                     , "Warning.", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return; 
+                return;
             }
             PlayButtonSound();
 
@@ -144,60 +147,41 @@ namespace Timer_Project
 
             txtHours.Enabled = false;
             txtMinutes.Enabled = false;
-            txtSeconds.Enabled= false;
-        } 
+            txtSeconds.Enabled = false;
+        }
 
         private void CounterAndChangeTimer()
         {
-            if (Seconds > 0)
-            {
-                Seconds--;
-                txtSeconds.Text = (Seconds).ToString();
-            }
-            else
-            {
+            timeRemainder = timeRemainder.Subtract(TimeSpan.FromSeconds(1));
+            Hours = timeRemainder.Hours;
+            Minutes = timeRemainder.Minutes;
+            Seconds = timeRemainder.Seconds;
 
-                if (Minutes > 0)
-                {
-                    Seconds = 59;
-                    Minutes--;
-                    txtMinutes.Text = (Minutes).ToString();
-                    txtSeconds.Text=(Seconds).ToString();
-                }
-                else if (Hours > 0)
-                {
-                    Seconds = 59;
-                    Minutes = 59;
-                    Hours--;
-                    txtHours.Text = (Hours).ToString();
-                    txtMinutes.Text = (Minutes).ToString();
-                    txtSeconds.Text = (Seconds).ToString();
-                }
-                else
-                {
-                    txtSeconds.Text = (Seconds).ToString();
-                    Timer.Enabled = false;
+            txtHours.Text = Hours.ToString();
+            txtMinutes.Text = Minutes.ToString();
+            txtSeconds.Text = Seconds.ToString();
 
-                    if (txtHours.Text == "0" && txtMinutes.Text == "0" && txtSeconds.Text == "0")
-                        PlayEndTimerSound();
-                }
+            if (timeRemainder.TotalSeconds <= 0)
+            {
+                Timer.Enabled = false;
+                PlayEndTimerSound();
             }
         }
 
         private void ChangeProgressParState(double ElapsedSeconds)
         {
-            if(State)
-           {  
+            if (State)
+            {
                 timeRemainder = new TimeSpan(Hours, Minutes, Seconds);
 
-                TimerInSeconds= timeRemainder.TotalSeconds;
+                TimerInSeconds = timeRemainder.TotalSeconds;
                 progTimer.Maximum = Convert.ToInt32(TimerInSeconds);
                 State = false;
             }
 
             if (progTimer.Value < progTimer.Maximum)
             {
-                progTimer.Value += 1; 
+                progTimer.Value += 1;
 
             }
 
@@ -207,7 +191,7 @@ namespace Timer_Project
         private void Timer_Tick(object sender, EventArgs e)
         {
             TimeSpan ElapsedTime = new TimeSpan(Hours, Minutes, Seconds);
-            ChangeProgressParState(ElapsedTime.TotalSeconds);
+            ChangeProgressParState(ElapsedTime.TotalSeconds - 1);
             CounterAndChangeTimer();
         }
     }
